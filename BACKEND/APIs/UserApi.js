@@ -61,6 +61,27 @@ userRoute.get('/articles',async(req,res)=>{
 }
 })
 
+// Read a single article by ID public route
+userRoute.get('/article/:id', async (req, res) => {
+  try {
+    const article = await ArticleModel.findById(req.params.id)
+      .populate("author", "firstName lastName")
+      .populate("comments.user", "email firstName lastName");
+
+    if (!article) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    if (!article.isArticleActive) {
+      return res.status(403).json({ message: "Article is inactive or deleted" });
+    }
+
+    res.status(200).json({ message: "Article found", payload: article });
+  } catch (err) {
+    return res.status(400).json({ message: err.message });
+  }
+});
+
 // Add comment to an article protected route
 userRoute.put('/articles', verifyToken("USER"), async (req, res) => {
 

@@ -186,7 +186,7 @@ function ArticleByID() {
       )}
 
       {/* USER comment form */}
-      {user?.role === "USER" && (
+      {user?.role === "USER" ? (
         <div className={articleActions}>
           <form onSubmit={handleSubmit(addComment)}>
             <input
@@ -212,7 +212,13 @@ function ArticleByID() {
             </button>
           </form>
         </div>
-      )}
+      ) : !user ? (
+        <div className="mt-8 p-6 bg-gray-100 rounded-2xl text-center shadow-inner">
+          <p className="text-gray-600">
+            Please <span className="font-bold text-blue-600 cursor-pointer hover:underline" onClick={() => navigate('/login')}>log in</span> to add a comment.
+          </p>
+        </div>
+      ) : null}
 
       {/* Comments */}
       <div className="mt-6">
