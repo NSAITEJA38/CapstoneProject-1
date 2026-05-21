@@ -9,7 +9,7 @@ import { commonRouter } from "./APIs/CommonApi.js";
 import { adminRoute } from "./APIs/AdminApi.js";
 import { authorRoute } from "./APIs/AuthorApi.js";
 
-config();
+config()
 
 const app = express();
 const port = process.env.PORT || 3000;
