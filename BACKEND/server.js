@@ -17,6 +17,7 @@ const port = process.env.PORT || 3000;
 const allowedOrigins = [
   process.env.FRONTEND_URL?.replace(/\/$/, ""),
   "http://localhost:5173",
+  "https://blog-app-frontend-m1hy.onrender.com"
 ].filter(Boolean);
 
 app.use(
