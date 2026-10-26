@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import axiosInstance from "../api/axios";
+import { toast } from "react-hot-toast";
 import {
   User,
   PenLine,
@@ -17,16 +18,21 @@ function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("USER");
 
   const {
     register,
     handleSubmit,
-    watch,
+    setValue,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      role: "USER",
+    },
+  });
 
   const navigate = useNavigate();
-  const selectedRole = watch("role");
 
   useEffect(() => {
     return () => {
@@ -43,7 +49,8 @@ function Register() {
     try {
       const formData = new FormData();
 
-      const { role, profileImageUrl, ...userObj } = data;
+      const { role, ...userObj } = data;
+      delete userObj.profileImageUrl;
 
       if (!role) {
         setError("Please select a role");
@@ -53,11 +60,13 @@ function Register() {
       formData.append("role", role);
 
       Object.keys(userObj).forEach((key) => {
-        formData.append(key, userObj[key]);
+        if (userObj[key] !== undefined && userObj[key] !== null) {
+          formData.append(key, userObj[key]);
+        }
       });
 
-      if (profileImageUrl && profileImageUrl[0]) {
-        formData.append("profilePic", profileImageUrl[0]);
+      if (selectedFile) {
+        formData.append("profilePic", selectedFile);
       }
 
       const url =
@@ -69,8 +78,7 @@ function Register() {
         },
       });
 
-      console.log("SUCCESS", res.data);
-
+      toast.success(res.data?.message || "Account created successfully! Please login.");
       navigate("/login");
     } catch (err) {
       console.log("Failed:", err);
@@ -160,6 +168,10 @@ function Register() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <label
+                  onClick={() => {
+                    setSelectedRole("USER");
+                    setValue("role", "USER");
+                  }}
                   className={`border rounded-2xl p-4 cursor-pointer transition flex items-center gap-4 ${
                     selectedRole === "USER"
                       ? "border-blue-600 bg-blue-50"
@@ -184,6 +196,10 @@ function Register() {
                 </label>
 
                 <label
+                  onClick={() => {
+                    setSelectedRole("AUTHOR");
+                    setValue("role", "AUTHOR");
+                  }}
                   className={`border rounded-2xl p-4 cursor-pointer transition flex items-center gap-4 ${
                     selectedRole === "AUTHOR"
                       ? "border-blue-600 bg-blue-50"
@@ -373,7 +389,6 @@ function Register() {
                 <input
                   type="file"
                   accept="image/png, image/jpeg"
-                  {...register("profileImageUrl")}
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files[0];
@@ -395,6 +410,7 @@ function Register() {
 
                       const previewUrl = URL.createObjectURL(file);
                       setPreview(previewUrl);
+                      setSelectedFile(file);
                       setError(null);
                     }
                   }}

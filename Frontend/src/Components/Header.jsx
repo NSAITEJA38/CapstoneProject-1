@@ -35,39 +35,39 @@ function Header() {
 
   // NavLink styles
   const navLinkStyles = ({ isActive }) =>
-    `px-4 py-2 rounded-lg font-medium transition duration-200
+    `px-3 py-1.5 rounded-lg text-sm font-medium transition duration-200
      ${
        isActive
-         ? "bg-white text-blue-600"
-         : "text-white hover:bg-blue-500"
+         ? "bg-white text-blue-700 shadow-sm"
+         : "text-white/90 hover:bg-white/15 hover:text-white"
      }`;
 
+  const displayName =
+    currentUser?.firstName ||
+    currentUser?.name ||
+    currentUser?.email?.split("@")[0] ||
+    "User";
+
   return (
-
-    <header className="bg-gradient-to-r bg-amber-300 to-indigo-700 shadow-lg">
-
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-
+    <header className="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 shadow-md sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3.5">
         {/* Logo */}
         <NavLink
           to="/"
-          className="text-2xl font-bold text-white tracking-wide"
+          className="flex items-center gap-2.5 text-xl font-bold text-white tracking-tight hover:opacity-95 transition"
         >
-         <img className='w-8 rounded-full h-8 sm:w-12.5 sm:h-12.5 object-cover ' src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7aio1A8-DCI6O_fLPR_tBgPQc6Xuxxr4Lfg&s" alt="" />
+          <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-white backdrop-blur-sm border border-white/20 shadow-sm">
+            <span className="text-lg">✍️</span>
+          </div>
+          <span>BlogApp</span>
         </NavLink>
 
         {/* Navigation */}
         <nav>
-
-          <ul className="flex items-center gap-4">
-
+          <ul className="flex items-center gap-3">
             {/* Home */}
             <li>
-              <NavLink
-                to="/"
-                end
-                className={navLinkStyles}
-              >
+              <NavLink to="/" end className={navLinkStyles}>
                 Home
               </NavLink>
             </li>
@@ -76,19 +76,13 @@ function Header() {
             {!isAuthenticated && (
               <>
                 <li>
-                  <NavLink
-                    to="/login"
-                    className={navLinkStyles}
-                  >
+                  <NavLink to="/login" className={navLinkStyles}>
                     Login
                   </NavLink>
                 </li>
 
                 <li>
-                  <NavLink
-                    to="/register"
-                    className={navLinkStyles}
-                  >
+                  <NavLink to="/register" className={navLinkStyles}>
                     Register
                   </NavLink>
                 </li>
@@ -99,31 +93,38 @@ function Header() {
             {isAuthenticated && (
               <>
                 <li>
-                  <NavLink
-                    to={getProfilePath()}
-                    className={navLinkStyles}
-                  >
-                    Profile
+                  <NavLink to={getProfilePath()} className={navLinkStyles}>
+                    {currentUser?.role === "ADMIN"
+                      ? "Admin Dashboard"
+                      : currentUser?.role === "AUTHOR"
+                      ? "Author Studio"
+                      : "Profile"}
                   </NavLink>
+                </li>
+
+                {/* User info badge */}
+                <li className="hidden sm:flex items-center gap-2 pl-2 border-l border-white/20">
+                  <span className="text-xs text-white/90 font-medium">
+                    {displayName}
+                  </span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20 text-white">
+                    {currentUser?.role}
+                  </span>
                 </li>
 
                 <li>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 rounded-lg bg-red-500 text-white font-medium hover:bg-red-600 transition duration-200"
+                    className="px-3.5 py-1.5 rounded-lg bg-red-500/90 text-white text-sm font-medium hover:bg-red-600 transition shadow-sm cursor-pointer"
                   >
                     Logout
                   </button>
                 </li>
               </>
             )}
-
           </ul>
-
         </nav>
-
       </div>
-
     </header>
   );
 }

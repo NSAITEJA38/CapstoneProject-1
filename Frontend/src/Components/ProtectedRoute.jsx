@@ -5,22 +5,27 @@ import { useAuth } from "../stores/authStore";
 function ProtectedRoute({ children, allowedRoles }) {
   const { isAuthenticated, currentUser, authChecked } = useAuth();
 
-  //  Wait until auth check completes
+  // Wait until auth check completes
   if (!authChecked) {
-    return <div>Checking authentication...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500 text-sm">
+        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-3"></div>
+        Checking authentication...
+      </div>
+    );
   }
 
-  //  Not logged in
+  // Not logged in
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  //  Role not allowed
-  if (!allowedRoles.includes(currentUser?.role)) {
-    return <Navigate to="/login" />;
+  // Role check if allowedRoles provided
+  if (allowedRoles && allowedRoles.length > 0 && !allowedRoles.includes(currentUser?.role)) {
+    return <Navigate to="/" replace />;
   }
 
-  //  Allowed
+  // Allowed
   return children;
 }
 

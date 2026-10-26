@@ -6,82 +6,87 @@ import { UserTypeModel } from '../models/UserModel.js';
 import bcrypt from 'bcryptjs';
 import {verifyToken} from '../middlewares/verifyToken.js'
 
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    maxAge: 24 * 60 * 60 * 1000,
+  };
+};
+
 // login
 commonRouter.post('/authenticate', async (req, res, next) => {
   try {
-    // console.log("body : ",req.body)
-    // get user credentials
-    let userCred=req.body;
-    // call authenticate service
-    let {token,user} = await authenticate(userCred);
-    // save token as cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000,
-    });
+    let userCred = req.body;
+    let { token, user } = await authenticate(userCred);
+    
+    res.cookie("token", token, getCookieOptions());
     res.status(200).json({
       message: "login success",
-      payload: user
+      payload: user,
+      token,
     });
   } catch (err) {
-    next(err); // send error to error middleware
+    next(err);
   }
 });
 
 // logout
-commonRouter.get('/logout',async(req,res)=>{
-  console.log("res obj ",res.cookie)
-    res.clearCookie("token", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
-    })
+commonRouter.get('/logout', async (req, res) => {
+  res.clearCookie("token", getCookieOptions());
+  res.status(200).json({ message: "user logged out" });
+});
 
-    res.status(200).json({message:"user logged out"})
-})
-// update password
-commonRouter.put('/change-password',async(req,res)=>{
-    try{// verify password
-    const {currentPassword}=req.body;
-    const {email}=req.body;
-    const {newPassword}=req.body
-    // check userExists
-    const userObj=await UserTypeModel.findOne({email:email})
-    console.log("userobj :",userObj)
-    if(!userObj){
-        return res.status(400).json({message:" user not found "})
+// update password (protected)
+commonRouter.put('/change-password', verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new password are required" });
     }
-    console.log(currentPassword,userObj.password)
-    // verify
-    const verify=await compare(currentPassword,userObj.password)
-    if(!verify){
-        return res.status(400).json({message:" password does not matched "})
 
+    if (newPassword.length < 4) {
+      return res.status(400).json({ message: "New password must be at least 4 characters" });
     }
-    // hash new password
-    const newHashedPassword =await bcrypt.hash(newPassword,10);
-    // change password
-    const updatedUserPassword=await UserTypeModel.findByIdAndUpdate(
-        userObj.id,
-        {password:newHashedPassword},
-        {new:true})
 
-        // $2b$10$6EblWifNnL6IXDL3DrG6heAfcl3JK.Feijiu4.EkyH.wDFXJfCshi
-        // $2b$10$NSS2sebTUU7wG0NnE6mWb.VC06Mdm1qgFyW1azHoR0eNpwH4yoUyi
-    return res.status(200).json({message:"password changed successfully "})
-    }catch(err){
-        return res.status(400).json({message:err.message})
+    const userObj = await UserTypeModel.findById(userId);
+    if (!userObj) {
+      return res.status(404).json({ message: "User not found" });
     }
-    
-    
-})
 
-// check-auth
-commonRouter.get('/check-auth',verifyToken("USER","AUTHOR","ADMIN"),(req,res)=>{
-  res.status(200).json({
-    message:"authenticated",
-    payload:req.user
-  })
-})
+    const verify = await compare(currentPassword, userObj.password);
+    if (!verify) {
+      return res.status(400).json({ message: "Current password does not match" });
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+    await UserTypeModel.findByIdAndUpdate(userId, { password: newHashedPassword });
+
+    return res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// check-auth (returns full user payload from DB)
+commonRouter.get('/check-auth', verifyToken("USER", "AUTHOR", "ADMIN"), async (req, res, next) => {
+  try {
+    const user = await UserTypeModel.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+    if (!user.isActive) {
+      return res.status(403).json({ message: "Your account is blocked. Contact admin." });
+    }
+    res.status(200).json({
+      message: "authenticated",
+      payload: user,
+    });
+  } catch (err) {
+    next(err);
+  }
+});

@@ -25,8 +25,8 @@ function EditArticle() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  const article = location.state;
-
+  const [article, setArticle] = useState(location.state || null);
+  const [fetching, setFetching] = useState(!location.state && Boolean(id));
   const [loading, setLoading] = useState(false);
 
   const {
@@ -35,6 +35,27 @@ function EditArticle() {
     setValue,
     formState: { errors },
   } = useForm();
+
+  // Fetch article if not provided in location.state
+  useEffect(() => {
+    if (article) return;
+    if (!id) return;
+
+    const fetchArticle = async () => {
+      setFetching(true);
+      try {
+        const res = await axiosInstance.get(`/user-api/article/${id}`);
+        setArticle(res.data.payload);
+      } catch (err) {
+        console.error("Fetch article to edit failed:", err);
+        toast.error("Failed to load article details");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchArticle();
+  }, [id, article]);
 
   // Prefill form
   useEffect(() => {
@@ -84,13 +105,21 @@ function EditArticle() {
     }
   };
 
+  if (fetching) {
+    return (
+      <div className={`${formCard} mt-10 text-center`}>
+        <p className={loadingClass}>Loading article details...</p>
+      </div>
+    );
+  }
+
   if (!article) {
     return (
       <div className={`${formCard} mt-10 text-center`}>
         <h2 className={formTitle}>Article data not found</h2>
 
         <p className="text-gray-500 mb-5">
-          Please open edit page from the article page again.
+          Please open the edit page from the article page or author dashboard.
         </p>
 
         <button

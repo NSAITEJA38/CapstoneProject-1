@@ -6,18 +6,19 @@ import { useAuth } from '../stores/authStore.js';
 
 // ROOT LAYOUT 
 export default function RootLayout() {
-const reload=useAuth(state=>state.reload)
-useEffect(() => {
-  reload();
-}, []);
+  const reload = useAuth((state) => state.reload);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
   return (
-    <div>
-        <Header/>
-          
-        <div>
-            <Outlet/>
-        </div>
-        <Footer/>
+    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+      <Header />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }

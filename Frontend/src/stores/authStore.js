@@ -19,6 +19,10 @@ export const useAuth = create((set) => ({
         userCred
       );
 
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
       set({
         loading: false,
         isAuthenticated: true,
@@ -33,6 +37,7 @@ export const useAuth = create((set) => ({
         user: res.data.payload,
       };
     } catch (err) {
+      localStorage.removeItem("token");
       const message =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -59,7 +64,13 @@ export const useAuth = create((set) => ({
     try {
       set({ loading: true, error: null });
 
-      await axiosInstance.get("/common-api/logout");
+      try {
+        await axiosInstance.get("/common-api/logout");
+      } catch {
+        // Continue even if network error occurs during logout
+      }
+
+      localStorage.removeItem("token");
 
       set({
         loading: false,
@@ -70,6 +81,7 @@ export const useAuth = create((set) => ({
         error: null,
       });
     } catch (err) {
+      localStorage.removeItem("token");
       const message =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -102,13 +114,30 @@ export const useAuth = create((set) => ({
         error: null,
       });
     } catch (err) {
+      localStorage.removeItem("token");
+      // 401 or 403 when user is not logged in or token is missing/expired
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        set({
+          currentUser: null,
+          isAuthenticated: false,
+          profileImageUrl: null,
+          loading: false,
+          authChecked: true,
+          error: null,
+        });
+        return;
+      }
+
       set({
         currentUser: null,
         isAuthenticated: false,
         profileImageUrl: null,
         loading: false,
         authChecked: true,
-        error: null,
+        error:
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Authentication check failed",
       });
     }
   },

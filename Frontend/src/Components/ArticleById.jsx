@@ -40,6 +40,16 @@ function ArticleByID() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const currentUserId = user?._id || user?.userId || user?.id;
+  const authorId = article?.author?._id || article?.author?.id || article?.author;
+  const isAuthor = Boolean(
+    currentUserId &&
+    authorId &&
+    currentUserId.toString() === authorId.toString()
+  );
+  const isAdmin = user?.role === "ADMIN";
+  const canModify = isAuthor || isAdmin;
+
   useEffect(() => {
     if (article) return;
 
@@ -122,9 +132,18 @@ function ArticleByID() {
       return;
     }
 
+    const userName =
+      user?.firstName ||
+      user?.username ||
+      user?.name ||
+      user?.email ||
+      "Unknown User";
+
     const payload = {
       articleId: article._id,
       comment: data.comment.trim(),
+      name: userName,
+      email: user?.email || "",
     };
 
     try {
@@ -172,74 +191,103 @@ function ArticleByID() {
       {/* Content */}
       <div className={articleContent}>{article.content}</div>
 
-      {/* AUTHOR actions */}
-      {user?.role === "AUTHOR" && (
+      {/* Author / Admin Actions */}
+      {canModify && (
         <div className={articleActions}>
           <button className={editBtn} onClick={() => editArticle(article)}>
-            Edit
+            Edit Article
           </button>
 
           <button className={deleteBtn} onClick={toggleArticleStatus}>
-            {article.isArticleActive ? "Delete" : "Restore"}
+            {article.isArticleActive ? "Delete Article" : "Restore Article"}
           </button>
         </div>
       )}
 
-      {/* USER comment form */}
-      {user?.role === "USER" ? (
-        <div className={articleActions}>
-          <form onSubmit={handleSubmit(addComment)}>
-            <input
-              type="text"
-              {...register("comment", {
-                required: "Comment is required",
-              })}
-              className={inputClass}
-              placeholder="Write your comment here..."
-            />
+      {/* Comment Form Section */}
+      <div className="mt-12 pt-8 border-t border-[#e8e8ed]">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6 tracking-tight">
+          Discussion ({article.comments?.length || 0})
+        </h2>
 
-            {errors.comment && (
-              <p className="text-red-500 text-sm mt-2">
-                {errors.comment.message}
-              </p>
-            )}
+        {user ? (
+          <form onSubmit={handleSubmit(addComment)} className="mb-10">
+            <div className="flex flex-col gap-3">
+              <textarea
+                rows="3"
+                {...register("comment", {
+                  required: "Comment is required",
+                })}
+                className={inputClass}
+                placeholder="Share your thoughts on this article..."
+              />
 
-            <button
-              type="submit"
-              className="bg-amber-600 text-white px-5 py-2 rounded-2xl mt-5"
-            >
-              Add comment
-            </button>
-          </form>
-        </div>
-      ) : !user ? (
-        <div className="mt-8 p-6 bg-gray-100 rounded-2xl text-center shadow-inner">
-          <p className="text-gray-600">
-            Please <span className="font-bold text-blue-600 cursor-pointer hover:underline" onClick={() => navigate('/login')}>log in</span> to add a comment.
-          </p>
-        </div>
-      ) : null}
+              {errors.comment && (
+                <p className="text-red-500 text-xs">{errors.comment.message}</p>
+              )}
 
-      {/* Comments */}
-      <div className="mt-6">
-        <h2 className="text-xl font-bold mb-4">Comments</h2>
-
-        {(article.comments || []).length === 0 ? (
-          <p className="text-gray-500">No comments yet.</p>
-        ) : (
-          (article.comments || []).map((comment, index) => (
-            <div
-              key={comment._id || index}
-              className="bg-gray-300 p-6 rounded-2xl mt-4"
-            >
-              <p className="uppercase text-pink-400 font-bold mb-3">
-                {comment.user?.email || "Unknown user"}
-              </p>
-
-              <p>{comment.comment}</p>
+              <div>
+                <button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2.5 rounded-full transition shadow-sm cursor-pointer"
+                >
+                  Post Comment
+                </button>
+              </div>
             </div>
-          ))
+          </form>
+        ) : (
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 text-center mb-8">
+            <p className="text-gray-700 font-medium mb-3">
+              Want to join the discussion?
+            </p>
+            <button
+              onClick={() => navigate("/login")}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-2 rounded-full transition"
+            >
+              Sign in to Comment
+            </button>
+          </div>
         )}
+
+        {/* Comments List */}
+        <div className="space-y-4">
+          {(article.comments || []).length === 0 ? (
+            <p className="text-gray-400 text-sm py-4">No comments yet. Be the first to share your thoughts!</p>
+          ) : (
+            (article.comments || []).map((comment, index) => {
+              const commenterName =
+                comment.name ||
+                comment.email ||
+                "Reader";
+              return (
+                <div
+                  key={comment._id || index}
+                  className="bg-gray-50 border border-gray-200/70 rounded-2xl p-5 shadow-sm hover:shadow transition"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold uppercase">
+                        {commenterName.charAt(0)}
+                      </div>
+                      <span className="font-semibold text-gray-800 text-sm">
+                        {commenterName}
+                      </span>
+                    </div>
+
+                    <span className="text-xs text-gray-400">
+                      {formatDate(comment.date)}
+                    </span>
+                  </div>
+
+                  <p className="text-gray-700 text-sm leading-relaxed pl-11">
+                    {comment.comment}
+                  </p>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* Footer */}

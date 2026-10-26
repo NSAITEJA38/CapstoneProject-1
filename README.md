@@ -1,77 +1,56 @@
-# Blog Application
+# Full-Stack Blog Application
 
-A full-stack blog web application where users can read and comment on articles, and authors can create, manage, and publish their own posts. 
+Welcome to the full-stack Blog Application! This repository contains the complete source code for both the client-side user interface and the server-side API.
 
-This project is divided into two parts:
-- **Frontend**: A React.js application.
-- **Backend**: An Express.js REST API with MongoDB.
+## Project Structure
 
----
-
-## Features
-
-### User Features
-- View all published articles
-- Read full article details
-- Comment on articles
-- View author profiles
-
-### Author Features
-- Create new articles
-- Edit or delete own articles
-- View all authored articles
-- Manage profile information
+- **`/FRONTEND`**: Contains the React frontend application built with Vite, Tailwind CSS, and Zustand.
+- **`/BACKEND`**: Contains the Node.js backend application built with Express, Mongoose (MongoDB), and JWT authentication.
 
 ---
 
-## Tech Stack
+## How to Run the Application
 
-### Frontend
-- **Framework**: React.js
-- **Routing**: React Router
-- **Styling**: Tailwind CSS
-- **HTTP Client**: Axios
-- **State Management**: Context API / Redux
+To run the application locally, you will need to start both the backend server and the frontend client simultaneously in **two separate terminal windows**.
 
-### Backend
-- **Server**: Node.js & Express.js
-- **Database**: MongoDB & Mongoose
+### Step 1: Start the Backend Server
 
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js
-- MongoDB
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository_url>
-   cd Capstone-project-1
-   ```
-
-2. **Backend Setup:**
+1. Open a terminal window.
+2. Navigate to the backend directory:
    ```bash
    cd BACKEND
-   npm install
-   # Create a .env file and add your environment variables (PORT, DB URL, etc.)
-   node server.js
    ```
-
-3. **Frontend Setup:**
+3. Install the required backend dependencies:
    ```bash
-   cd Frontend
    npm install
-   # Create a .env file if necessary
+   ```
+4. **Environment Variables**: Create a `.env` file in the `BACKEND` folder. You will need to add your specific configuration keys here (e.g., `PORT`, `DB_URL` for MongoDB, `JWT_SECRET`, Cloudinary API keys, etc.).
+5. Start the backend development server:
+   ```bash
    npm run dev
    ```
 
+### Step 2: Start the Frontend Client
+
+1. Open a **new** terminal window.
+2. Navigate to the frontend directory:
+   ```bash
+   cd FRONTEND
+   ```
+3. Install the required frontend dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the frontend development server:
+   ```bash
+   npm run dev
+   ```
+5. Open the link provided in your terminal (usually `http://localhost:5173`) in your web browser.
+
 ---
 
-## Deployment
+## Further Documentation
 
-The frontend of this application is deployed and can be accessed here:
-[**Live Application Link**](https://blog-app-frontend-m1hy.onrender.com/)
+For more specific information on each part of the project, including how to build them from scratch, please refer to the individual `README.md` files located in their respective folders:
+- [Frontend README](./FRONTEND/README.md)
+- [Backend README](./BACKEND/README.md)

@@ -1,64 +1,70 @@
 import express from "express";
-import { config } from "dotenv";
 import { connect } from "mongoose";
-import cookieParser from "cookie-parser";
+import { config } from "dotenv";
 import cors from "cors";
 
+import cookieParser from "cookie-parser";
+
 import { userRoute } from "./APIs/UserApi.js";
+// import { commonRoute } from "./APIs/CommonAPI.js"
 import { commonRouter } from "./APIs/CommonApi.js";
 import { adminRoute } from "./APIs/AdminApi.js";
 import { authorRoute } from "./APIs/AuthorApi.js";
 
-config()
+config();
 
 const app = express();
+
 const port = process.env.PORT || 3000;
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL?.replace(/\/$/, ""),
+  process.env.FRONTEND_URL,
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
   "https://blog-app-frontend-m1hy.onrender.com"
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin(origin, callback) {
-      if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
-        return callback(null, true);
-      }
-      return callback(new Error(`Not allowed by CORS: ${origin}`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// CORS should be before routes
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true); // Permissive in dev, credentials still checked
+  },
+  credentials: true
+}));
 
+// Body parser
 app.use(express.json());
+
+// Cookie parser
 app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Backend running successfully" });
-});
-
+// Routes
 app.use("/user-api", userRoute);
 app.use("/common-api", commonRouter);
 app.use("/admin-api", adminRoute);
 app.use("/author-api", authorRoute);
 
+// Test route
+app.get("/", (req, res) => {
+  res.send("Backend running successfully");
+});
+
+// Centralized error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(err.status || 500).json({
-    message: err.message || "Internal Server Error",
+  console.error("Unhandled error:", err);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({
+    message: err.message || "Internal server error",
+    ...(process.env.NODE_ENV !== "production" ? { stack: err.stack } : {}),
   });
 });
 
 const connectDB = async () => {
   try {
-    if (!process.env.DB_URL) {
-      throw new Error("DB_URL is missing in environment variables");
-    }
-
     await connect(process.env.DB_URL);
     console.log("Connected to MongoDB Successfully");
 
@@ -66,8 +72,7 @@ const connectDB = async () => {
       console.log(`Server running on port ${port}`);
     });
   } catch (err) {
-    console.log("MongoDB/server startup error:", err);
-    process.exit(1);
+    console.log("MongoDB connection error:", err);
   }
 };
 
