@@ -4,6 +4,11 @@ A responsive single-page frontend application for the Blog Platform, built with 
 
 ---
 
+## 🚀 Live Deployment Links
+
+- **Live Application**: [https://blog-app-frontend-m1hy.onrender.com](https://blog-app-frontend-m1hy.onrender.com)
+- **Connected Backend API**: [https://blog-app-backend-47sr.onrender.com](https://blog-app-backend-47sr.onrender.com)
+
 ## Features
 
 - **Home Page**: Interactive responsive grid of published articles with category tags, author cards, and creation timestamps.

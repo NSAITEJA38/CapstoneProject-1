@@ -4,6 +4,11 @@ The backend for the Blog Application is an Express.js REST API using MongoDB (Mo
 
 ---
 
+## 🚀 Live Deployment Links
+
+- **Live REST API**: [https://blog-app-backend-47sr.onrender.com](https://blog-app-backend-47sr.onrender.com)
+- **Live Frontend**: [https://blog-app-frontend-m1hy.onrender.com](https://blog-app-frontend-m1hy.onrender.com)
+
 ## Architecture & Features
 
 - **Express 5**: Fast, modular REST API.

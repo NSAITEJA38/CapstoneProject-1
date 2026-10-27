@@ -4,8 +4,19 @@ A modern, production-ready Full-Stack Blog Application built with **React 19**, 
 
 ---
 
+## 🚀 Live Deployment Links
+
+| Service | Live URL | Status |
+| :--- | :--- | :--- |
+| **Frontend Application** | [https://blog-app-frontend-m1hy.onrender.com](https://blog-app-frontend-m1hy.onrender.com) | Deployed on Render |
+| **Backend REST API** | [https://blog-app-backend-47sr.onrender.com](https://blog-app-backend-47sr.onrender.com) | Deployed on Render |
+| **GitHub Repository** | [https://github.com/NSAITEJA38/CapstoneProject-1](https://github.com/NSAITEJA38/CapstoneProject-1) | Source Code |
+
+---
+
 ## Table of Contents
 
+- [Live Deployment Links](#-live-deployment-links)
 - [Features](#features)
   - [Reader / User Features](#reader--user-features)
   - [Author Features](#author-features)
