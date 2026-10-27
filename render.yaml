@@ -1,0 +1,48 @@
+services:
+  # Backend API Web Service
+  - type: web
+    name: blog-app-backend
+    runtime: node
+    plan: free
+    rootDir: BACKEND
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: DB_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUD_NAME
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: API_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: blog-app-frontend
+          property: host
+
+  # Frontend React SPA Static Site
+  - type: web
+    name: blog-app-frontend
+    runtime: static
+    plan: free
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: blog-app-backend
+          property: host
